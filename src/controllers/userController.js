@@ -3,6 +3,7 @@ const UserModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
 
 const { isValid, isValidName, isValidContact, isValidEmail, isValidObjectId, isValidPassword } = require("../utils/validator")
+const userModel = require("../models/userModel")
 
 //Register User
 const createUser = async (req, res) => {
@@ -74,7 +75,6 @@ const createUser = async (req, res) => {
     }
 }
 
-
 //Login User
 const logInUser = async (req, res) => {
     try {
@@ -139,5 +139,98 @@ const logInUser = async (req, res) => {
 
 }
 
+//Get My Profile
+const getProfile = async (req, res) => {
+    try {
+        let userId = req.userId;
 
-module.exports = { createUser, logInUser }
+        let user = await UserModel.findById(userId)
+
+        if (!user) {
+            return res.status(404).json({ msg: "User Not FOund" })
+        }
+        return res.status(200).json({ msg: "User Fetched Successfully", user })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ msg: "Internal Server Error" })
+    }
+}
+
+//Delete Profile
+const deleteProfile = async (req, res) => {
+    try {
+        let userId = req.userId;
+
+        let deletedUser = await UserModel.findByIdAndDelete(userId)
+
+        if (!deletedUser) {
+            return res.status(404).json({ msg: "User not found or Already deleted" })
+        }
+        return res.status(200).json({ msg: "User deleted successfully" })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ msg: "Internal Server Error" })
+    }
+}
+
+//Update Profile
+const updateProfile = async (req, res) => {
+    let userId = req.userId;
+    let userData = req.body;
+
+    if (!userData || Object.keys(userData).length === 0) {
+        return res.status(400).json({ msg: "Bad request, No Data Provided" })
+    }
+
+    let { fullName, email, password, mobile } = userData
+
+    //FullName Validation
+    if (fullName && !isValidName(fullName)) {
+        return res.status(400).json({ msg: "Invalid Name" })
+    }
+
+    //Email Validation 
+
+    if (email) {
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ msg: "Invalid Email" })
+        }
+
+        let emailExist = await UserModel.findOne({ email })
+        if (emailExist) {
+            return res.status(400).json({ msg: "Email already exist" })
+        }
+    }
+
+    //Mobile Number Validation
+    if (mobile) {
+        if (!isValidContact(mobile)) {
+            return res.status(400).json({ msg: "Invalid Contact Number" })
+        }
+
+        let ContactNoExist = await UserModel.findOne({ mobile })
+        if (ContactNoExist) {
+            return res.status(400).json({ msg: "Contact Number already exist" })
+        }
+    }
+
+    //Password Validation
+    if (password) {
+        if (!isValidPassword(password)) {
+            return res.status(400).json({ msg: "Invalid Password" })
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+        userData.password = hashedPassword
+    }
+
+    let updatedUser = await UserModel.findByIdAndUpdate(userId, userData, { new: true })
+
+    if (!updatedUser) {
+        return req.status(404).json({ msg: "User Not Found" })
+    }
+    return res.status(200).json({ msg: "User Updated Successfully", updatedUser })
+}
+
+
+module.exports = { createUser, logInUser, getProfile, deleteProfile, updateProfile }

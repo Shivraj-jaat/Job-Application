@@ -9,6 +9,23 @@ const dBConnection = require("./config/db")
 
 const app = express();
 
+// let middleware1 = (req, res, next)=>{
+//     console.log("Middleware 1")
+//     res.send("req. Ended")
+//     next()
+// }
+
+// let middleware2 = (req, res, next) => {
+//     res.end("Req. Ended")
+//     next()
+// }
+
+// app.use(middleware1)
+// app.use(middleware2)
+
+
+
+
 app.use(express.json())
 app.use("/users", userRoute)
 dBConnection()
