@@ -7,6 +7,6 @@ router.post("/register", createUser)
 router.post("/login", logInUser)
 router.get("/profile", auth, getProfile)
 router.delete("/delete", auth, deleteProfile)
-router.post("/update", auth, updateProfile)
+router.put("/update", auth, updateProfile)
 
 module.exports = router;

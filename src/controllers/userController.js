@@ -185,46 +185,124 @@ const updateProfile = async (req, res) => {
     let { fullName, email, password, mobile } = userData
 
     //FullName Validation
-    if (fullName && !isValidName(fullName)) {
-        return res.status(400).json({ msg: "Invalid Name" })
+    // if (fullName) {
+    //     if (!isValid(fullName)) {
+    //         return res.status(400).json({ msg: "Full Name is Required" })
+    //     }
+
+    //     if (!isValidName(fullName)) {
+    //         return res.status(400).json({ msg: "Invalid Name" })
+    //     }
+
+    // }
+
+
+    let updatedData = {};
+    if (fullName !== undefined) {
+        if (!isValid(fullName)) {
+            return res.status(400).json({ msg: "Full Name is Required" })
+        }
+
+        if (!isValidName(fullName)) {
+            return res.status(400).json({ msg: "Invalid Name" })
+        }
+        updatedData.fullName = fullName;
     }
 
     //Email Validation 
 
-    if (email) {
+    // if (email) {
+    //     if (!isValid(email)) {
+    //         return res.status(400).json({ msg: "Email is Required" })
+    //     }
+
+    //     if (!isValidEmail(email)) {
+    //         return res.status(400).json({ msg: "Invalid Email" })
+    //     }
+
+    //     let emailExist = await UserModel.findOne({ email, _id: { $ne: userId } })
+    //     if (emailExist) {
+    //         return res.status(400).json({ msg: "Email already exist" })
+    //     }
+    // }
+
+    if (email !== undefined) {
+        if (!isValid(email)) {
+            return res.status(400).json({ msg: "Email is Required" })
+        }
+
         if (!isValidEmail(email)) {
             return res.status(400).json({ msg: "Invalid Email" })
         }
 
-        let emailExist = await UserModel.findOne({ email })
+        let emailExist = await UserModel.findOne({ email, _id: { $ne: userId } })
         if (emailExist) {
             return res.status(400).json({ msg: "Email already exist" })
         }
+        updatedData.email = email;
     }
 
+
     //Mobile Number Validation
-    if (mobile) {
+    // if (mobile) {
+    //     if (!isValid(mobile)) {
+    //         return res.status(400).json({ msg: "Contact Number is Required" })
+    //     }
+
+    //     if (!isValidContact(mobile)) {
+    //         return res.status(400).json({ msg: "Invalid Contact Number" })
+    //     }
+
+    //     let ContactNoExist = await UserModel.findOne({ mobile, _id: { $ne: userId } })
+    //     if (ContactNoExist) {
+    //         return res.status(400).json({ msg: "Contact Number already exist" })
+    //     }
+    // }
+
+    if (mobile !== undefined) {
+        if (!isValid(mobile)) {
+            return res.status(400).json({ msg: "Contact Number is Required" })
+        }
+
         if (!isValidContact(mobile)) {
             return res.status(400).json({ msg: "Invalid Contact Number" })
         }
 
-        let ContactNoExist = await UserModel.findOne({ mobile })
+        let ContactNoExist = await UserModel.findOne({ mobile, _id: { $ne: userId } })
         if (ContactNoExist) {
             return res.status(400).json({ msg: "Contact Number already exist" })
         }
+        updatedData.mobile = mobile;
     }
 
     //Password Validation
-    if (password) {
+    // if (password) {
+    //     if (!isValid(password)) {
+    //         return res.status(400).json({ msg: "Password is Required" })
+    //     }
+
+    //     if (!isValidPassword(password)) {
+    //         return res.status(400).json({ msg: "Invalid Password" })
+    //     }
+
+    //     const hashedPassword = await bcrypt.hash(password, 10)
+    //     userData.password = hashedPassword
+    // }
+
+    if (password !== undefined) {
+        if (!isValid(password)) {
+            return res.status(400).json({ msg: "Password is Required" })
+        }
         if (!isValidPassword(password)) {
             return res.status(400).json({ msg: "Invalid Password" })
         }
-
-        const hashedPassword = await bcrypt.hash(password, 10)
-        userData.password = hashedPassword
+        updatedData.password = await bcrypt.hash(password, 10)
     }
 
-    let updatedUser = await UserModel.findByIdAndUpdate(userId, userData, { new: true })
+    let updatedUser = await UserModel.findByIdAndUpdate(userId, updatedData, { new: true })
+
+
+    // let updatedUser = await UserModel.findByIdAndUpdate(userId, userData, { new: true })
 
     if (!updatedUser) {
         return req.status(404).json({ msg: "User Not Found" })

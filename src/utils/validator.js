@@ -10,7 +10,7 @@ const isValid = (value) => {
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id)
 
-const isValidName = (input) => /^[a-zA-Z ]+$/.test(input)
+const isValidName = (input) => /^[a-zA-Z ]{2,}$/.test(input)
 
 const isValidEmail = (input) => /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(input)
 
