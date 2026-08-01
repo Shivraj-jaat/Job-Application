@@ -3,7 +3,7 @@ const UserModel = require("../models/userModel")
 const jwt = require("jsonwebtoken")
 
 const { isValid, isValidName, isValidContact, isValidEmail, isValidObjectId, isValidPassword } = require("../utils/validator")
-const userModel = require("../models/userModel")
+// const userModel = require("../models/userModel")
 
 //Register User
 const createUser = async (req, res) => {

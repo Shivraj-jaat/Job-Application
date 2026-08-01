@@ -1,3 +1,4 @@
+const { isValidObjectId } = require("mongoose");
 const jobModel = require("../models/jobModel")
 const { isValid } = require("../utils/validator")
 
@@ -58,6 +59,143 @@ const createJob = async (req, res) => {
     }
 }
 
+//Get All Jobs
+const getAllJobs = async (req, res) => {
+    try {
+        let jobs = await jobModel.find({ userId: req.userId });
 
+        if (jobs.length === 0) {
+            return res.status(404).json({ msg: "No Jobs Found" })
+        }
 
-module.exports = { createJob }
+        return res.status(200).json({ msg: "Job Fetched Successfully", totalJobs: jobs.length, data: jobs })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ msg: "Internal Server Error" })
+    }
+}
+
+//Get Specific Job
+const getJobById = async (req, res) => {
+    try {
+
+        let id = req.params.id
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ msg: "Invalid Id" })
+        }
+
+        let job = await jobModel.findOne({
+            _id: id,
+            userId: req.userId
+        })
+
+        if (!job) {
+            return res.status(400).json({ msg: "Job not Found" })
+        }
+        return res.status(200).json({ job })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ msg: "Internal Server Error" })
+    }
+}
+
+//Delete Jobs
+const deleteJobs = async (req, res) => {
+    try {
+        let id = req.params.id;
+        await jobModel.findByIdAndDelete(id)
+        return res.status(200).json({ msg: "User Deleted Successfully" })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ msg: "Internal Server Error" })
+    }
+}
+
+//Update Job
+const updateJob = async (req, res) => {
+    try {
+        let id = req.params.id;
+        let updateData = req.body;
+
+        if (!updateData || Object.keys(updateData).length === 0) {
+            return res.status(400).json({ msg: "Bad Request! No Data Provided" })
+        }
+
+        let { jobTitle, companyName, location, salary, jobType, status, description } = updateData;
+        let updatedData = {};
+
+        if (jobTitle !== undefined) {
+            if (!isValid(jobTitle)) {
+                return res.status(400).json({ msg: "Job Title is Required" })
+            }
+            updatedData.jobTitle = jobTitle;
+        }
+
+        if (companyName !== undefined) {
+            if (!isValid(companyName)) {
+                return res.status(400).json({ msg: "Company Name is Required" })
+            }
+            updatedData.companyName = companyName;
+        }
+
+        if (location !== undefined) {
+            if (!isValid(location)) {
+                return res.status(400).json({ msg: "Location is Required" })
+            }
+            updatedData.location = location;
+        }
+
+        if (salary !== undefined) {
+            if (!isValid(salary)) {
+                return res.status(400).json({ msg: "Salary is Required" })
+            }
+            updatedData.salary = salary;
+        }
+
+        if (jobType !== undefined) {
+            if (!isValid(jobType)) {
+                return res.status(400).json({ msg: "Job Type is Required" })
+            }
+
+            if (!["Full Time", "Part Time", "Remote", "Internship"].includes(jobType)) {
+                return res.status(400).json({ msg: "Invalid Job Types" })
+            }
+            updatedData.jobType = jobType;
+        }
+
+        if (status !== undefined) {
+            if (!["Applied", "Interview", "Selected", "Rejected"].includes(status)) {
+                return res.status(400).json({ msg: "Invalid Job Status" })
+            }
+            updatedData.status = status;
+        }
+
+        if (description !== undefined) {
+            if (!isValid(description)) {
+                return res.status(400).json({ msg: "Job Description is Required" })
+            }
+            updatedData.description = description;
+        }
+
+        let updatedJob = await jobModel.findByIdAndUpdate(
+            id,
+            updatedData,
+            { new: true }
+        )
+
+        if (!updatedJob) {
+            return res.status(404).json({ msg: "Job not Found" })
+        }
+
+        return res.status(200).json({ msg: "Job Updated Successfully", updatedJob })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ msg: "Internal Server Error" })
+    }
+}
+
+module.exports = { createJob, getAllJobs, getJobById, deleteJobs, updateJob }
